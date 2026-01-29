@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mantenimiento ACONTC 2025 - Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="dashboard">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <h1 class="logo">Mantenimiento <span class="accent">ACONTC</span> 2025</h1>
+            </div>
+            <div class="header-right">
+                <button class="btn-upload" id="uploadBtn">
+                    <span class="icon">📄</span> Subir CSV
+                </button>
+                <input type="file" id="csvInput" accept=".csv" style="display: none;">
+                <select id="filterPeriod" class="filter-select">
+                    <option value="all">Todo el tiempo</option>
+                    <option value="month1">Último mes</option>
+                    <option value="month3">Último trimestre</option>
+                    <option value="month6">Último semestre</option>
+                </select>
+                <select id="filterYear" class="filter-select">
+                    <option value="all">Todos los años</option>
+                </select>
+                <button class="btn-refresh" id="refreshBtn">
+                    <span class="icon">🔄</span> Actualizar
+                </button>
+            </div>
+        </header>
+
+        <!-- KPI Cards -->
+        <section class="kpi-section">
+            <div class="kpi-card">
+                <div class="kpi-icon tickets-icon">🎫</div>
+                <div class="kpi-content">
+                    <span class="kpi-label">Total Tickets</span>
+                    <span class="kpi-value" id="totalTickets">0</span>
+                    <span class="kpi-change positive" id="ticketsChange">+0%</span>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon money-icon">💰</div>
+                <div class="kpi-content">
+                    <span class="kpi-label">Facturación Total</span>
+                    <span class="kpi-value" id="totalGasto">$0</span>
+                    <span class="kpi-status">— Estable</span>
+                </div>
+            </div>
+            <div class="kpi-card emergency">
+                <div class="kpi-icon emergency-icon">⚠️</div>
+                <div class="kpi-content">
+                    <span class="kpi-label">Emergencias</span>
+                    <span class="kpi-value" id="totalEmergencias">0</span>
+                    <span class="kpi-subvalue" id="totalEmergenciasValor">$0</span>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon budget-icon">📋</div>
+                <div class="kpi-content">
+                    <span class="kpi-label">Presupuestos</span>
+                    <span class="kpi-value" id="totalPresupuestos">0</span>
+                    <span class="kpi-subvalue" id="totalPresupuestosValor">$0</span>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon store-icon">🏪</div>
+                <div class="kpi-content">
+                    <span class="kpi-label">Tiendas Activas</span>
+                    <span class="kpi-value" id="totalTiendas">0</span>
+                    <span class="kpi-status success">✓ 100%</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Estados Section -->
+        <section class="estados-section">
+            <h2 class="section-title">📊 Estados de Tickets</h2>
+            <div class="estados-cards">
+                <div class="estado-card estado-operativo">
+                    <h3>Estado Operativo</h3>
+                    <div class="estado-items" id="estadosOperativos"></div>
+                </div>
+                <div class="estado-card estado-administrativo">
+                    <h3>Estado Final (Administrativo)</h3>
+                    <div class="estado-items" id="estadosAdministrativos"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Charts Section -->
+        <section class="charts-section">
+            <div class="chart-container timeline-chart">
+                <div class="chart-header">
+                    <h2>Evolución Temporal de Tickets</h2>
+                    <a href="#" class="chart-link">Ver detalle</a>
+                </div>
+                <canvas id="timelineChart"></canvas>
+            </div>
+            <div class="chart-container group-chart">
+                <div class="chart-header">
+                    <h2>Distribución por Grupo</h2>
+                </div>
+                <canvas id="groupChart"></canvas>
+                <div class="chart-legend" id="groupLegend"></div>
+            </div>
+        </section>
+
+        <!-- Tipo Section -->
+        <section class="tipo-section">
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h2>Tickets por Tipo de Visita</h2>
+                </div>
+                <canvas id="tipoChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h2>Grupos por Estado Final</h2>
+                </div>
+                <canvas id="grupoEstadoChart"></canvas>
+            </div>
+        </section>
+
+        <!-- Tiendas Table -->
+        <section class="table-section">
+            <div class="table-container">
+                <div class="table-header">
+                    <h2>🏪 Tiendas por Cantidad de Tickets (Mayor a Menor)</h2>
+                    <input type="text" id="searchTienda" placeholder="Buscar tienda..." class="search-input">
+                </div>
+                <div class="table-wrapper">
+                    <table id="tiendasTable">
+                        <thead>
+                            <tr>
+                                <th>Ranking</th>
+                                <th>ID Tienda</th>
+                                <th>Localidad</th>
+                                <th>Tickets</th>
+                                <th>Emergencias</th>
+                                <th>Presupuestos</th>
+                                <th>Valor Total</th>
+                                <th>Progreso</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tiendasBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Dashboard Mantenimiento ACONTC 2025 | Última actualización: <span id="lastUpdate"></span></p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
