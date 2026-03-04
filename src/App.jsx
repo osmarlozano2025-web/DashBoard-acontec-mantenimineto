@@ -360,49 +360,63 @@ const App = () => {
   const adminTimelineData = useMemo(() => {
     const timeline = {};
 
-    // Recolectar todas las fechas únicas para el eje X
     filteredData.forEach(t => {
-      // Campos CT, OC y EM
+      // Procesar fechas de CT, OC y EM
       ['FECHA CT', 'FECHA OC', 'FECHA EM'].forEach(field => {
         if (t[field]) {
-          const dateStr = String(t[field]);
-          const date = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
-          if (!timeline[date]) {
-            timeline[date] = { 'FECHA CT': 0, 'Aprobado': 0, 'FECHA OC': 0, 'FECHA EM': 0 };
+          const date = parseISO(String(t[field]));
+          if (!isNaN(date.getTime())) {
+            const weekStart = startOfWeek(date, { weekStartsOn: 1 });
+            const weekLabel = format(weekStart, 'dd/MM/yyyy');
+
+            if (!timeline[weekLabel]) {
+              timeline[weekLabel] = { 'FECHA CT': 0, 'Aprobados': 0, 'FECHA OC': 0, 'FECHA EM': 0 };
+            }
+            timeline[weekLabel][field] = (timeline[weekLabel][field] || 0) + 1;
           }
-          timeline[date][field] = (timeline[date][field] || 0) + 1;
         }
       });
 
-      // Nueva lógica para Aprobados: requiere FECHA SOLUCIONADO, 1° REMITO y ESTADO FINAL === APROBADO
+      // Procesar Aprobados (con lógica de agrupación semanal)
       const fechaSolucionado = t['FECHA SOLUCIONADO'] || t['FECHA solucionado'];
       if (fechaSolucionado && t['1° REMITO'] && t['ESTADO FINAL'] === 'APROBADO') {
-        const dateStr = String(fechaSolucionado);
-        const date = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
-        if (!timeline[date]) {
-          timeline[date] = { 'FECHA CT': 0, 'Aprobados': 0, 'FECHA OC': 0, 'FECHA EM': 0 };
+        const date = parseISO(String(fechaSolucionado));
+        if (!isNaN(date.getTime())) {
+          const weekStart = startOfWeek(date, { weekStartsOn: 1 });
+          const weekLabel = format(weekStart, 'dd/MM/yyyy');
+
+          if (!timeline[weekLabel]) {
+            timeline[weekLabel] = { 'FECHA CT': 0, 'Aprobados': 0, 'FECHA OC': 0, 'FECHA EM': 0 };
+          }
+          timeline[weekLabel]['Aprobados'] = (timeline[weekLabel]['Aprobados'] || 0) + 1;
         }
-        timeline[date]['Aprobados'] = (timeline[date]['Aprobados'] || 0) + 1;
       }
     });
 
-    const sortedDates = Object.keys(timeline).sort();
+    const sortedWeeks = Object.keys(timeline).sort((a, b) => {
+      const [da, ma, ya] = a.split('/').map(Number);
+      const [db, mb, yb] = b.split('/').map(Number);
+      return new Date(ya, ma - 1, da) - new Date(yb, mb - 1, db);
+    });
 
     return {
       series: [
-        { name: 'Fecha CT', data: sortedDates.map(d => timeline[d]['FECHA CT'] || 0) },
-        { name: 'Aprobados', data: sortedDates.map(d => timeline[d]['Aprobados'] || 0) },
-        { name: 'O.C.', data: sortedDates.map(d => timeline[d]['FECHA OC'] || 0) },
-        { name: 'E.M.', data: sortedDates.map(d => timeline[d]['FECHA EM'] || 0) }
+        { name: 'Fecha CT', data: sortedWeeks.map(w => timeline[w]['FECHA CT'] || 0) },
+        { name: 'Aprobados', data: sortedWeeks.map(w => timeline[w]['Aprobados'] || 0) },
+        { name: 'O.C.', data: sortedWeeks.map(w => timeline[w]['FECHA OC'] || 0) },
+        { name: 'E.M.', data: sortedWeeks.map(w => timeline[w]['FECHA EM'] || 0) }
       ],
       options: {
         chart: { type: 'line', toolbar: { show: false }, zoom: { enabled: false }, foreColor: '#94a3b8' },
         colors: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'],
         stroke: { curve: 'smooth', width: 3 },
-        xaxis: { categories: sortedDates },
+        xaxis: {
+          categories: sortedWeeks,
+          title: { text: 'Semana (Lunes)' }
+        },
         grid: { borderColor: 'rgba(255,255,255,0.05)' },
         tooltip: { theme: 'dark' },
-        markers: { size: 4 },
+        markers: { size: 5 },
         legend: { position: 'top' }
       }
     };
