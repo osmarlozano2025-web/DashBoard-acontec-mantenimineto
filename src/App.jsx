@@ -65,6 +65,7 @@ const PhotoCard = ({ label, url }) => {
   const [imgError, setImgError] = useState(false);
   const [resolvedUrl, setResolvedUrl] = useState(null);
   const [resolving, setResolving] = useState(false);
+  const [technicalState, setTechnicalState] = useState('');
 
   useEffect(() => {
     let isMounted = true;
@@ -75,8 +76,6 @@ const PhotoCard = ({ label, url }) => {
       }
 
       const rawUrl = getImageUrl(url);
-
-      // Si getImageUrl ya encontró un ID de Drive o una URL directa, lo usamos
       if (rawUrl) {
         if (isMounted) {
           setResolvedUrl(rawUrl);
@@ -86,23 +85,36 @@ const PhotoCard = ({ label, url }) => {
         return;
       }
 
-      // Si no es una URL directa (es un nombre de archivo o ruta), probamos con el script
       if (typeof url === 'string' && url.trim().length > 0) {
-        if (isMounted) setResolving(true);
+        if (isMounted) {
+          setResolving(true);
+          setTechnicalState('Conectando con Google Script...');
+        }
         try {
           const fetchUrl = `${SCRIPT_URL}?action=resolve&path=${encodeURIComponent(url)}`;
           const res = await fetch(fetchUrl);
+
+          if (!res.ok) {
+            if (isMounted) setTechnicalState(`Error de Red: ${res.status}`);
+            throw new Error('Network error');
+          }
+
           const data = await res.json();
           if (isMounted) {
             if (data && data.id) {
               setResolvedUrl(`https://lh3.googleusercontent.com/d/${data.id}`);
               setImgError(false);
+              setTechnicalState('');
             } else {
               setImgError(true);
+              setTechnicalState(data.error || 'Archivo no encontrado en Drive');
             }
           }
-        } catch {
-          if (isMounted) setImgError(true);
+        } catch (err) {
+          if (isMounted) {
+            setImgError(true);
+            setTechnicalState('Error: Script desactualizado o CORS');
+          }
         } finally {
           if (isMounted) setResolving(false);
         }
@@ -123,7 +135,7 @@ const PhotoCard = ({ label, url }) => {
       {resolving ? (
         <div className="photo-placeholder">
           <div className="spinner" style={{ width: '24px', height: '24px', marginBottom: '10px' }}></div>
-          <span style={{ fontSize: '0.7rem' }}>Buscando foto...</span>
+          <span style={{ fontSize: '0.7rem' }}>{technicalState}</span>
         </div>
       ) : resolvedUrl && !imgError ? (
         <>
@@ -145,7 +157,12 @@ const PhotoCard = ({ label, url }) => {
           <span style={{ fontWeight: 600, color: '#ff4444', fontSize: '0.8rem' }}>
             {imgError ? 'Imagen No Encontrada' : `Sin ${label}`}
           </span>
-          {url && (
+          {technicalState && (
+            <p style={{ color: '#ffb703', fontSize: '0.65rem', marginTop: '5px', padding: '0 5px' }}>
+              💡 {technicalState}
+            </p>
+          )}
+          {url && !technicalState && (
             <div style={{ marginTop: '8px', padding: '0 10px', width: '100%', overflow: 'hidden' }}>
               <p style={{ fontSize: '0.55rem', opacity: 0.6 }}>Ruta:</p>
               <code style={{ fontSize: '0.5rem', wordBreak: 'break-all', display: 'block', background: 'rgba(0,0,0,0.3)', padding: '4px', borderRadius: '4px' }}>
