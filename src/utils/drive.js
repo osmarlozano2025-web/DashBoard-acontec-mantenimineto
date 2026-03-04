@@ -31,9 +31,9 @@ export const getImageUrl = (url) => {
         }
     }
 
-    // Si encontramos un ID, usamos el endpoint de previsualización de Google
+    // Si encontramos un ID, usamos el endpoint de previsualización de Google (formato thumbnail es más robusto)
     if (driveId) {
-        return `https://lh3.googleusercontent.com/d/${driveId}`;
+        return `https://drive.google.com/thumbnail?id=${driveId}&sz=w1000`;
     }
 
     // Si no es nada de lo anterior, retornamos null para que PhotoCard maneje el error o placeholder

@@ -12,9 +12,9 @@ Si deseas crear una aplicación idéntica para otra empresa, sigue estos pasos d
    - `ESTADO`
    - ... (ver GUIA_IMPORTANTE.md)
 
-## Paso 2: Configurar Google Apps Script
+## Paso 2: Configurar Google Apps Script (Versión Mejorada)
 1. En el Sheet, ve a **Extensiones** -> **Apps Script**.
-2. Pega el código del script motor (ubicado en las capturas del proyecto).
+2. Pega el código del script motor revisado (ver `GUIA_IMPORTANTE.md`). Este script permite que el Dashboard busque fotos por su nombre automáticamente.
 3. **Importante**: Actualiza la variable `SPREADSHET_ID` con el ID de la nueva hoja de cálculo.
 4. Implementa como App Web, ejecutando como "Yo" y con acceso para "Cualquiera".
 5. Copia la URL de la implementación.

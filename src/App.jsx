@@ -102,7 +102,7 @@ const PhotoCard = ({ label, url }) => {
           const data = await res.json();
           if (isMounted) {
             if (data && data.id) {
-              setResolvedUrl(`https://lh3.googleusercontent.com/d/${data.id}`);
+              setResolvedUrl(`https://drive.google.com/thumbnail?id=${data.id}&sz=w1000`);
               setImgError(false);
               setTechnicalState('');
             } else {
@@ -144,6 +144,7 @@ const PhotoCard = ({ label, url }) => {
             alt={label}
             onError={() => setImgError(true)}
             onClick={() => window.open(resolvedUrl, '_blank')}
+            referrerPolicy="no-referrer"
           />
           <div className="photo-actions">
             <button className="expand-btn" onClick={() => window.open(resolvedUrl, '_blank')}>
