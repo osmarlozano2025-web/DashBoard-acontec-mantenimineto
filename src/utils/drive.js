@@ -8,8 +8,8 @@ export const getImageUrl = (url) => {
     // 1. Limpiar espacios
     const cleanUrl = url.trim();
 
-    // 2. Si ya es una URL directa de imagen (no Drive)
-    if (cleanUrl.match(/\.(jpeg|jpg|gif|png|webp)$/i) && !cleanUrl.includes('drive.google.com')) {
+    // 2. Si ya es una URL directa de imagen (no Drive) y ES HTTP
+    if (cleanUrl.startsWith('http') && cleanUrl.match(/\.(jpeg|jpg|gif|png|webp|svg)$/i) && !cleanUrl.includes('drive.google.com')) {
         return cleanUrl;
     }
 
