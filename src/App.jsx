@@ -75,7 +75,9 @@ const PhotoCard = ({ label, url }) => {
       }
 
       const rawUrl = getImageUrl(url);
-      if (rawUrl && rawUrl.includes('lh3.googleusercontent.com')) {
+
+      // Si getImageUrl ya encontró un ID de Drive o una URL directa, lo usamos
+      if (rawUrl) {
         if (isMounted) {
           setResolvedUrl(rawUrl);
           setResolving(false);
@@ -84,7 +86,8 @@ const PhotoCard = ({ label, url }) => {
         return;
       }
 
-      if (typeof url === 'string' && (url.startsWith('/') || url.includes('/'))) {
+      // Si no es una URL directa (es un nombre de archivo o ruta), probamos con el script
+      if (typeof url === 'string' && url.trim().length > 0) {
         if (isMounted) setResolving(true);
         try {
           const fetchUrl = `${SCRIPT_URL}?action=resolve&path=${encodeURIComponent(url)}`;
@@ -105,8 +108,8 @@ const PhotoCard = ({ label, url }) => {
         }
       } else {
         if (isMounted) {
-          setResolvedUrl(rawUrl);
-          setImgError(!rawUrl);
+          setResolvedUrl(null);
+          setImgError(true);
         }
       }
     };
